@@ -1,21 +1,27 @@
 from typing import Sequence
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
-from qiskit.circuit.library import CDKMRippleCarryAdder, HRSCumulativeMultiplier
+from qiskit.circuit.library import (
+    CDKMRippleCarryAdder,
+    HRSCumulativeMultiplier,
+)
 from math import ceil, log2
 
 
 class Norm2(QuantumCircuit):
     r"""
-    Returns a circuit to calculate the norm of a given vector stored in a quantum register
+    Returns a circuit to calculate the square of the norm of a given vector
+    stored in a quantum register
     TODO: add details about the number of qubits, ancillas, etc.
     """
 
-    def __init__(self, dimension: int, max_value: int, name: str = "NormCalc") -> None:
+    def __init__(
+        self, dimension: int, max_value: int, name: str = "NormCalc"
+    ) -> None:
         r"""
         Creating a norm calcluating circuit
         """
         super().__init__(name=name)
-        N = ceil(log2(max_value))  # number of qubits needed to store each entry
+        N = ceil(log2(max_value))  # no of qubits needed to represent elements
         values = [QuantumRegister(N, name=f"v_{i}") for i in range(dimension)]
         self.add_register(*values)
         copy = QuantumRegister(N, name="copy")
@@ -23,13 +29,16 @@ class Norm2(QuantumCircuit):
 
         mult_gate = HRSCumulativeMultiplier(N).to_gate(label="SquareCalc")
         mult_outs = [
-            QuantumRegister(2 * N + i, name=f"square_{i}") for i in range(dimension)
+            QuantumRegister(2 * N + i, name=f"square_{i}")
+            for i in range(dimension)
         ]
         mult_helper = QuantumRegister(1, name=f"multiplication helper")
         self.add_register(*mult_outs, mult_helper)
 
         add_helper = QuantumRegister(1, name=f"addition helper")
-        couts = [QuantumRegister(1, name=f"cout_{i}") for i in range(dimension)]
+        couts = [
+            QuantumRegister(1, name=f"cout_{i}") for i in range(dimension)
+        ]
         self.add_register(*couts, add_helper)
 
         norm = QuantumRegister(2 * N + dimension, name="norm")
@@ -39,7 +48,8 @@ class Norm2(QuantumCircuit):
         for i in range(dimension):
             circuit.cx(values[i], copy)
             circuit.append(
-                mult_gate, [*values[i], *copy, *mult_outs[i][: 2 * N], mult_helper]
+                mult_gate,
+                [*values[i], *copy, *mult_outs[i][: 2 * N], mult_helper],
             )
             circuit.append(
                 CDKMRippleCarryAdder(2 * N + i, kind="half").to_gate(),
