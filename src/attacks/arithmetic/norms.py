@@ -5,12 +5,17 @@ from math import ceil, log2
 
 
 class Norm2(QuantumCircuit):
+    r"""
+    Returns a circuit to calculate the norm of a given vector stored in a quantum register
+    TODO: add details about the number of qubits, ancillas, etc.
+    """
+
     def __init__(self, dimension: int, max_value: int, name: str = "NormCalc") -> None:
         r"""
-        TODO: Add documentation
+        Creating a norm calcluating circuit
         """
         super().__init__(name=name)
-        N = ceil(log2(max_value)) # number of qubits needed to store each entry
+        N = ceil(log2(max_value))  # number of qubits needed to store each entry
         values = [QuantumRegister(N, name=f"v_{i}") for i in range(dimension)]
         self.add_register(*values)
         copy = QuantumRegister(N, name="copy")
