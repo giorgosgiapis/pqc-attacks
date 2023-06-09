@@ -11,7 +11,14 @@ class Norm2(QuantumCircuit):
     r"""
     Returns a circuit to calculate the square of the norm of a given vector
     stored in a quantum register
-    TODO: add details about the number of qubits, ancillas, etc.
+
+    :param dimension: Dimension of the vector
+    :param max_value: Upper bound for the maximum value of any vector element.
+        :math:`\lceil\log_2(\text{max_value})\rceil` qubits are needed to store 
+        each vector entry
+    
+    TODO: add details about the circuit implementation, number qubits, ancillas,
+    etc
     """
 
     def __init__(
