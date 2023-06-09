@@ -10,27 +10,22 @@ class Norm2(QuantumCircuit):
         TODO: Add documentation
         """
         super().__init__(name=name)
-        N = ceil(log2(max_value))
+        N = ceil(log2(max_value)) # number of qubits needed to store each entry
         values = [QuantumRegister(N, name=f"v_{i}") for i in range(dimension)]
         self.add_register(*values)
         copy = QuantumRegister(N, name="copy")
         self.add_register(copy)
 
-        mult_gate = HRSCumulativeMultiplier(3).to_gate(label="SquareCalc")
+        mult_gate = HRSCumulativeMultiplier(N).to_gate(label="SquareCalc")
         mult_outs = [
             QuantumRegister(2 * N + i, name=f"square_{i}") for i in range(dimension)
         ]
-        mult_helpers = [
-            QuantumRegister(1, name=f"multiplication helper_{i}")
-            for i in range(dimension)
-        ]
-        self.add_register(*mult_outs, *mult_helpers)
+        mult_helper = QuantumRegister(1, name=f"multiplication helper")
+        self.add_register(*mult_outs, mult_helper)
 
-        add_helpers = [
-            QuantumRegister(1, name=f"addition helper_{i}") for i in range(dimension)
-        ]
+        add_helper = QuantumRegister(1, name=f"addition helper")
         couts = [QuantumRegister(1, name=f"cout_{i}") for i in range(dimension)]
-        self.add_register(*couts, *add_helpers)
+        self.add_register(*couts, add_helper)
 
         norm = QuantumRegister(2 * N + dimension, name="norm")
         self.add_register(norm)
@@ -39,11 +34,11 @@ class Norm2(QuantumCircuit):
         for i in range(dimension):
             circuit.cx(values[i], copy)
             circuit.append(
-                mult_gate, [*values[i], *copy, *mult_outs[i][: 2 * N], *mult_helpers[i]]
+                mult_gate, [*values[i], *copy, *mult_outs[i][: 2 * N], mult_helper]
             )
             circuit.append(
                 CDKMRippleCarryAdder(2 * N + i, kind="half").to_gate(),
-                [*mult_outs[i], *norm[: 2 * N + i], *couts[i], *add_helpers[i]],
+                [*mult_outs[i], *norm[: 2 * N + i], couts[i], add_helper],
             )
             circuit.cx(couts[i], norm[[2 * N + i]])
             circuit.cx(values[i], copy)
