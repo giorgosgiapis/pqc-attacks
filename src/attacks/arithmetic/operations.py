@@ -62,4 +62,3 @@ class SignedAdder(QuantumCircuit):
             circuit.append(c_tensor_x, [nums[i][-1], *nums[i][:-1]])
 
         self.append(circuit.to_gate(label=name), self.qubits)
-    

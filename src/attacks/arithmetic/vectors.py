@@ -27,7 +27,9 @@ class Norm2(QuantumCircuit):
         Creates a norm calcluating circuit
         """
         super().__init__(name=name)
-        values = [QuantumRegister(bits, name=f"v_{i}") for i in range(dimension)]
+        values = [
+            QuantumRegister(bits, name=f"v_{i}") for i in range(dimension)
+        ]
         self.add_register(*values)
         copy = QuantumRegister(bits, name="copy")
         self.add_register(copy)
