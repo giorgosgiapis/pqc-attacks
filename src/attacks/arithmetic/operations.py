@@ -44,15 +44,20 @@ class SignedAdder(QuantumCircuit):
         for i in range(2):
             circuit.append(c_tensor_x, [nums[i][-1], *nums[i][:-1]])
 
+        # add the two registers
         circuit.append(
             CDKMRippleCarryAdder(bits, kind="half").to_gate(),
             [*nums[0], *nums[1], cout, helper],
         )
+        # if the carry bit is 1 disregard it and add 1 to the result
         circuit.append(
             controlled_adder(bits), [cout, *one, *nums[1], ccout, helper]
         )
+        # reset the ancillary qubit storing the value of 1
         circuit.x(one[0])
 
+        # convert the two registers to sign-magnitude format
+        # the second register stores the value of the sum
         for i in range(2):
             circuit.append(c_tensor_x, [nums[i][-1], *nums[i][:-1]])
 
