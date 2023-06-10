@@ -4,7 +4,7 @@ on quantum registers
 """
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit.library import CDKMRippleCarryAdder
-from attacks.utils.quantum import controlled_X, controlled_adder
+from ..utils.quantum import controlled_X, controlled_adder
 
 
 class SignedAdder(QuantumCircuit):
