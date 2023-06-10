@@ -4,10 +4,18 @@ arithmetic package
 Submodules
 ----------
 
-arithmetic.norms module
------------------------
+arithmetic.operations module
+----------------------------
 
-.. automodule:: arithmetic.norms
+.. automodule:: arithmetic.operations
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+arithmetic.vectors module
+-------------------------
+
+.. automodule:: arithmetic.vectors
    :members:
    :undoc-members:
    :show-inheritance:

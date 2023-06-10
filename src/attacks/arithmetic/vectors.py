@@ -1,10 +1,9 @@
-from typing import Sequence
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from math import ceil, log2
+from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit.library import (
     CDKMRippleCarryAdder,
     HRSCumulativeMultiplier,
 )
-from math import ceil, log2
 
 
 class Norm2(QuantumCircuit):
@@ -14,9 +13,9 @@ class Norm2(QuantumCircuit):
 
     :param dimension: Dimension of the vector
     :param max_value: Upper bound for the maximum value of any vector element.
-        :math:`\lceil\log_2(\text{max_value})\rceil` qubits are needed to store 
+        :math:`\lceil\log_2(\text{max_value})\rceil` qubits are needed to store
         each vector entry
-    
+
     TODO: add details about the circuit implementation, number qubits, ancillas,
     etc
     """
@@ -39,10 +38,10 @@ class Norm2(QuantumCircuit):
             QuantumRegister(2 * N + i, name=f"square_{i}")
             for i in range(dimension)
         ]
-        mult_helper = QuantumRegister(1, name=f"multiplication helper")
+        mult_helper = QuantumRegister(1, name="multiplication helper")
         self.add_register(*mult_outs, mult_helper)
 
-        add_helper = QuantumRegister(1, name=f"addition helper")
+        add_helper = QuantumRegister(1, name="addition helper")
         couts = [
             QuantumRegister(1, name=f"cout_{i}") for i in range(dimension)
         ]
