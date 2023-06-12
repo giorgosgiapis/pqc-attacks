@@ -5,7 +5,6 @@ from attacks.utils.quantum import encode_signed_int
 
 
 def test_Norm2():
-    # change this
     vec = [1, -4, 6, -2]
 
     norm_calc = Norm2(len(vec), 5)
