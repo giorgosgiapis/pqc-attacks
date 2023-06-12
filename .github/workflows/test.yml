@@ -20,4 +20,4 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Running unit tests
       run: |
-        python -m unittest
+        pytest
