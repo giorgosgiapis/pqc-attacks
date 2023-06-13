@@ -114,12 +114,12 @@ class Compare(QuantumCircuit):
 
         if geq == "=":
             circuit.cx(is_zero, result)
-        elif geq == ">" or geq == "<=":
+        elif geq in (">", "<="):
             circuit.x(is_zero)
             circuit.x(sgn_2)
             circuit.mcx([*sgn_2, *is_zero], result)
             circuit.x(sgn_2)
-        elif geq == "<" or geq == ">=":
+        elif geq in ("<", ">="):
             circuit.x(is_zero)
             circuit.mcx([*sgn_2, *is_zero], result)
 
