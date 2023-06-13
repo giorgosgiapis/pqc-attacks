@@ -109,7 +109,7 @@ class Compare(QuantumCircuit):
 
         if geq not in ["=", ">", "<", ">=", "<="]:
             raise ValueError(
-                "Parameter `geq` should be one of '=', '>', '<', '>=', '<="
+                "Parameter `geq` should be one of '=', '>', '<', '>=', '<='"
             )
 
         if geq == "=":
