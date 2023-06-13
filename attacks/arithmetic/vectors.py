@@ -87,7 +87,3 @@ class Norm2(QuantumCircuit):
 
         self.append(circuit.to_gate(label=name), self.qubits)
         self.num_result_qubits: int = len(norm)
-
-
-if __name__ == "__main__":
-    print(Norm2(3, 5).draw())

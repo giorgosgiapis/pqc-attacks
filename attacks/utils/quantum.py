@@ -28,7 +28,7 @@ def controlled_adder(num_qubits: int) -> Gate:
 
 
 def encode_signed_int(value: int, bits: int) -> Gate:
-    """
+    r"""
     Returns a gate encoding a signed integer in a quantum register in sign-
     magnitude representation
     """

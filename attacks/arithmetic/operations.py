@@ -62,3 +62,68 @@ class SignedAdder(QuantumCircuit):
             circuit.append(c_tensor_x, [nums[i][-1], *nums[i][:-1]])
 
         self.append(circuit.to_gate(label=name), self.qubits)
+        self.num_helper: int = self.num_qubits - 2 * bits
+
+
+class Compare(QuantumCircuit):
+    r"""
+    Compares two signed integers stored in quantum registers:
+
+    .. math::
+
+        |a\rangle|b\rangle|0\rangle\mapsto |a\rangle|a-b\rangle|a\gtrless b\rangle
+
+    TODO: add more
+    """
+
+    def __init__(self, bits: int, geq: str = ">", name: str = "Compare"):
+        r"""
+        Creates a comparator circuit
+        """
+        super().__init__(name=name)
+        magnitude_bits = bits - 1
+        val_1 = QuantumRegister(magnitude_bits, name="val_1")
+        sgn_1 = QuantumRegister(1, name="sgn1")
+        val_2 = QuantumRegister(magnitude_bits, name="val_2")
+        sgn_2 = QuantumRegister(1, name="sgn2")
+        self.add_register(val_1, sgn_1, val_2, sgn_2)
+
+        adder = SignedAdder(bits, name="Subtract")
+
+        anc = QuantumRegister(adder.num_helper, name="ancillas")
+        self.add_register(anc)
+
+        is_zero = QuantumRegister(1, name="zero_flag")
+        self.add_register(is_zero)
+
+        result = QuantumRegister(1, name="result")
+        self.add_register(result)
+
+        circuit = QuantumCircuit(*self.qregs)
+        circuit.x(sgn_2)
+        circuit.append(adder.to_gate(), [*val_1, *sgn_1, *val_2, *sgn_2, *anc])
+
+        circuit.x(val_2)
+        circuit.mcx(val_2, is_zero)
+        circuit.x(val_2)
+
+        if geq not in ["=", ">", "<", ">=", "<="]:
+            raise ValueError(
+                "Parameter `geq` should be one of '=', '>', '<', '>=', '<="
+            )
+
+        if geq == "=":
+            circuit.cx(is_zero, result)
+        elif geq == ">" or geq == "<=":
+            circuit.x(is_zero)
+            circuit.x(sgn_2)
+            circuit.mcx([*sgn_2, *is_zero], result)
+            circuit.x(sgn_2)
+        elif geq[0] == "<":
+            circuit.x(is_zero)
+            circuit.mcx([*sgn_2, *is_zero], result)
+
+        if len(geq) > 1:
+            circuit.x(result)
+
+        self.append(circuit.to_gate(label=name), self.qubits)
