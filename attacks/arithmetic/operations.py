@@ -4,7 +4,7 @@ on quantum registers
 """
 from qiskit import QuantumCircuit, QuantumRegister, AncillaRegister
 from qiskit.circuit.library import CDKMRippleCarryAdder
-from ..utils.quantum import controlled_X, controlled_adder
+from ..utils.quantum import controlled_X, controlled_incr
 
 
 class SignedAdder(QuantumCircuit):
@@ -30,14 +30,7 @@ class SignedAdder(QuantumCircuit):
         helper = AncillaRegister(1, name="helper")
         self.add_register(cout, helper)
 
-        ccout = AncillaRegister(1, name="c_cout")
-        self.add_register(ccout)
-
-        one = AncillaRegister(bits, name="one")
-        self.add_register(one)
-
         circuit = QuantumCircuit(*self.qregs)
-        circuit.x(one[0])
 
         # convert to 1's complement format
         c_tensor_x = controlled_X(bits - 1)
@@ -50,11 +43,7 @@ class SignedAdder(QuantumCircuit):
             [*nums[0], *nums[1], cout, helper],
         )
         # if the carry bit is 1 disregard it and add 1 to the result
-        circuit.append(
-            controlled_adder(bits), [cout, *one, *nums[1], ccout, helper]
-        )
-        # reset the ancillary qubit storing the value of 1
-        circuit.x(one[0])
+        circuit.append(controlled_incr(bits), [cout, *nums[1]])
 
         # convert the two registers to sign-magnitude format
         # the second register stores the value of the sum

@@ -16,15 +16,16 @@ def controlled_X(n: int) -> Gate:
     return circuit.control(1).to_gate(label="c-X^(⊗n)")
 
 
-def controlled_adder(num_qubits: int) -> Gate:
+def controlled_incr(num_qubits: int) -> Gate:
     r"""
-    Returns a controlled `CDKMRippleCarryAdder` half-adder gate.
+    Returns a controlled increment gate.
     """
-    return (
-        CDKMRippleCarryAdder(num_qubits, kind="half")
-        .control(1)
-        .to_gate(label="c-Add")
-    )
+    incr_circuit = QuantumCircuit(num_qubits)
+    for i in range(num_qubits - 1, 0, -1):
+        incr_circuit.mcx(list(range(i)), i)
+    incr_circuit.x(0)
+
+    return incr_circuit.control(1).to_gate(label="c-Incr")
 
 
 def encode_signed_int(value: int, bits: int) -> Gate:
