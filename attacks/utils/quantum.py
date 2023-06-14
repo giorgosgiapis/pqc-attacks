@@ -33,7 +33,7 @@ def encode_signed_int(value: int, bits: int) -> Gate:
     magnitude representation
     """
     magnitude_bits = bits - 1
-    if ceil(log2(abs(value))) > magnitude_bits:
+    if value != 0 and ceil(log2(abs(value))) > magnitude_bits:
         raise ValueError(f"{bits} bits are not enough bits to encode {value}")
 
     circuit = QuantumCircuit()

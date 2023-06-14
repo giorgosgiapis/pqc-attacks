@@ -20,10 +20,10 @@ def test_Norm2():
     circuit.append(norm_calc, *circuit.qregs)
 
     result_bits = norm_calc.num_result_qubits
-    result = ClassicalRegister(result_bits)
-    circuit.add_register(result)
+    result_reg = ClassicalRegister(result_bits)
+    circuit.add_register(result_reg)
 
-    circuit.measure(circuit.qubits[-result_bits:], result)
+    circuit.measure(circuit.qubits[-result_bits:], result_reg)
 
     simulator = AerSimulator(method="matrix_product_state")
     result = execute(circuit, simulator, shots=1024).result().get_counts()

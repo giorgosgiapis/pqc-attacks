@@ -75,7 +75,7 @@ class Compare(QuantumCircuit):
     TODO: add more
     """
 
-    def __init__(self, bits: int, geq: str = ">", name: str = "Compare"):
+    def __init__(self, bits: int, cmp: str = ">", name: str = "Compare"):
         r"""
         Creates a comparator circuit
         """
@@ -106,23 +106,23 @@ class Compare(QuantumCircuit):
         circuit.mcx(val_2, is_zero)
         circuit.x(val_2)
 
-        if geq not in ["=", ">", "<", ">=", "<="]:
+        if cmp not in ("==", ">", "<", ">=", "<="):
             raise ValueError(
-                "Parameter `geq` should be one of '=', '>', '<', '>=', '<='"
+                "Parameter `cmp` should be one of '==', '>', '<', '>=', '<='"
             )
 
-        if geq == "=":
+        if cmp == "==":
             circuit.cx(is_zero, result)
-        elif geq in (">", "<="):
+        elif cmp in (">", "<="):
             circuit.x(is_zero)
             circuit.x(sgn_2)
             circuit.mcx([*sgn_2, *is_zero], result)
             circuit.x(sgn_2)
-        elif geq in ("<", ">="):
+        elif cmp in ("<", ">="):
             circuit.x(is_zero)
             circuit.mcx([*sgn_2, *is_zero], result)
 
-        if len(geq) > 1:
+        if cmp in (">=", "<="):
             circuit.x(result)
 
         self.append(circuit.to_gate(label=name), self.qubits)
