@@ -2,7 +2,7 @@ r"""
 Contains methods to perform arithemtic operations on (signed) integers stored
 on quantum registers
 """
-from qiskit import QuantumCircuit, QuantumRegister
+from qiskit import QuantumCircuit, QuantumRegister, AncillaRegister
 from qiskit.circuit.library import CDKMRippleCarryAdder
 from ..utils.quantum import controlled_X, controlled_adder
 
@@ -26,14 +26,14 @@ class SignedAdder(QuantumCircuit):
         ]
         self.add_register(*nums)
 
-        cout = QuantumRegister(1, name="cout")
-        helper = QuantumRegister(1, name="helper")
+        cout = AncillaRegister(1, name="cout")
+        helper = AncillaRegister(1, name="helper")
         self.add_register(cout, helper)
 
-        ccout = QuantumRegister(1, name="c_cout")
+        ccout = AncillaRegister(1, name="c_cout")
         self.add_register(ccout)
 
-        one = QuantumRegister(bits, name="one")
+        one = AncillaRegister(bits, name="one")
         self.add_register(one)
 
         circuit = QuantumCircuit(*self.qregs)
@@ -62,7 +62,6 @@ class SignedAdder(QuantumCircuit):
             circuit.append(c_tensor_x, [nums[i][-1], *nums[i][:-1]])
 
         self.append(circuit.to_gate(label=name), self.qubits)
-        self.num_helper: int = self.num_qubits - 2 * bits
 
 
 class Compare(QuantumCircuit):
@@ -90,10 +89,10 @@ class Compare(QuantumCircuit):
 
         adder = SignedAdder(bits, name="Subtract")
 
-        anc = QuantumRegister(adder.num_helper, name="ancillas")
+        anc = AncillaRegister(adder.num_ancillas, name="ancillas")
         self.add_register(anc)
 
-        is_zero = QuantumRegister(1, name="zero_flag")
+        is_zero = AncillaRegister(1, name="zero_flag")
         self.add_register(is_zero)
 
         result = QuantumRegister(1, name="result")
