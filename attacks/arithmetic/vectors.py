@@ -86,4 +86,4 @@ class Norm2(QuantumCircuit):
             circuit.cx(values[i], copy)
 
         self.append(circuit.to_gate(label=name), self.qubits)
-        self.num_result_qubits: int = len(norm)
+        self.result_register: int = norm
