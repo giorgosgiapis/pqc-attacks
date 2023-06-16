@@ -15,7 +15,7 @@ def controlled_X(n: int) -> ControlledGate:
     return circuit.to_gate(label="c-X^(⊗n)").control(1)
 
 
-def controlled_incr(num_qubits: int) -> Gate:
+def controlled_incr(num_qubits: int) -> ControlledGate:
     r"""
     Returns a controlled increment gate.
     """
