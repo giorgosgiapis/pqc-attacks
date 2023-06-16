@@ -3,16 +3,16 @@ Utility quantum functions
 """
 from math import ceil, log2
 from qiskit import QuantumCircuit, QuantumRegister
-from qiskit.circuit import Gate
+from qiskit.circuit import Gate, ControlledGate
 
 
-def controlled_X(n: int) -> Gate:
+def controlled_X(n: int) -> ControlledGate:
     r"""
     Returns a controlled :math:`X^{\otimes n}` gate
     """
     circuit: QuantumCircuit = QuantumCircuit(n)
     circuit.x(range(n))
-    return circuit.control(1).to_gate(label="c-X^(⊗n)")
+    return circuit.to_gate(label="c-X^(⊗n)").control(1)
 
 
 def controlled_incr(num_qubits: int) -> Gate:
@@ -24,7 +24,7 @@ def controlled_incr(num_qubits: int) -> Gate:
         incr_circuit.mcx(list(range(i)), i)
     incr_circuit.x(0)
 
-    return incr_circuit.control(1).to_gate(label="c-Incr")
+    return incr_circuit.to_gate(label="c-Incr").control(1)
 
 
 def encode_signed_int(value: int, bits: int) -> Gate:
@@ -49,4 +49,21 @@ def encode_signed_int(value: int, bits: int) -> Gate:
         if bit == "1":
             circuit.x(value_reg[i])
 
-    return circuit.to_gate(label="encode")
+    return circuit.to_gate(label="encode_int")
+
+
+def encode_vector(values: list[int], bits: int) -> Gate:
+    r"""
+    Returns a gate encoding a vector to a quantum register
+    """
+    dimension = len(values)
+    circuit: QuantumCircuit = QuantumCircuit()
+    values_reg: list[QuantumRegister] = [
+        QuantumRegister(bits, name=f"v_{i}") for i in range(dimension)
+    ]
+    circuit.add_register(*values_reg)
+
+    for i, val in enumerate(values):
+        circuit.append(encode_signed_int(val, bits), values_reg[i])
+
+    return circuit.to_gate(label="encode_vec")
