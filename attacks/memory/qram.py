@@ -1,7 +1,7 @@
 from math import ceil, log2
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit import Gate
-from ..utils.quantum import encode_signed_int
+from ..utils.quantum import encode_vector
 
 
 class qRAM(QuantumCircuit):
@@ -33,17 +33,16 @@ class qRAM(QuantumCircuit):
         circuit: QuantumCircuit = QuantumCircuit(*self.qregs)
         for i in range(n_values):
             x_gates: list[QuantumRegister] = []
-            for j, bit in enumerate(bin(i)[2:].zfill(num_addr_qubits)):
+            for j, bit in enumerate(bin(i)[2:].zfill(num_addr_qubits)[::-1]):
                 if bit == "0":
                     x_gates.append(addr_reg[j])
             if x_gates:
                 circuit.x(x_gates)
 
-            for j, element in enumerate(values[i]):
-                controlled_encode: Gate = encode_signed_int(
-                    element, bits
-                ).control(num_addr_qubits)
-                circuit.append(controlled_encode, [*addr_reg, *value_regs[j]])
+            controlled_encode: Gate = encode_vector(values[i], bits).control(
+                num_addr_qubits
+            )
+            circuit.append(controlled_encode, circuit.qubits)
 
             if x_gates:
                 circuit.x(x_gates)
