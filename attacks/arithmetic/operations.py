@@ -3,6 +3,7 @@ Contains methods to perform arithemtic operations on (signed) integers stored
 on quantum registers
 """
 from qiskit import QuantumCircuit, QuantumRegister, AncillaRegister
+from qiskit.circuit import Gate
 from qiskit.circuit.library import CDKMRippleCarryAdder
 from ..utils.quantum import controlled_X, controlled_incr
 
@@ -20,20 +21,20 @@ class SignedAdder(QuantumCircuit):
         Creates a signed adder circuit
         """
         super().__init__(name=name)
-        nums = [
+        nums: list[QuantumRegister] = [
             QuantumRegister(bits, name="num1"),
             QuantumRegister(bits, name="num2"),
         ]
         self.add_register(*nums)
 
-        cout = AncillaRegister(1, name="cout")
-        helper = AncillaRegister(1, name="helper")
+        cout: AncillaRegister = AncillaRegister(1, name="cout")
+        helper: AncillaRegister = AncillaRegister(1, name="helper")
         self.add_register(cout, helper)
 
-        circuit = QuantumCircuit(*self.qregs)
+        circuit: QuantumCircuit = QuantumCircuit(*self.qregs)
 
         # convert to 1's complement format
-        c_tensor_x = controlled_X(bits - 1)
+        c_tensor_x: Gate = controlled_X(bits - 1)
         for i in range(2):
             circuit.append(c_tensor_x, [nums[i][-1], *nums[i][:-1]])
 
@@ -64,30 +65,32 @@ class Compare(QuantumCircuit):
     TODO: add more
     """
 
-    def __init__(self, bits: int, cmp: str = ">", name: str = "Compare"):
+    def __init__(
+        self, bits: int, cmp: str = ">", name: str = "Compare"
+    ) -> None:
         r"""
         Creates a comparator circuit
         """
         super().__init__(name=name)
         magnitude_bits = bits - 1
-        val_1 = QuantumRegister(magnitude_bits, name="val_1")
-        sgn_1 = QuantumRegister(1, name="sgn1")
-        val_2 = QuantumRegister(magnitude_bits, name="val_2")
-        sgn_2 = QuantumRegister(1, name="sgn2")
+        val_1: QuantumRegister = QuantumRegister(magnitude_bits, name="val_1")
+        sgn_1: QuantumRegister = QuantumRegister(1, name="sgn1")
+        val_2: QuantumRegister = QuantumRegister(magnitude_bits, name="val_2")
+        sgn_2: QuantumRegister = QuantumRegister(1, name="sgn2")
         self.add_register(val_1, sgn_1, val_2, sgn_2)
 
-        adder = SignedAdder(bits, name="Subtract")
+        adder: Gate = SignedAdder(bits, name="Subtract")
 
-        anc = AncillaRegister(adder.num_ancillas, name="ancillas")
+        anc: AncillaRegister = AncillaRegister(adder.num_ancillas, name="anc")
         self.add_register(anc)
 
-        is_zero = AncillaRegister(1, name="zero_flag")
+        is_zero: AncillaRegister = AncillaRegister(1, name="zero_flag")
         self.add_register(is_zero)
 
-        result = QuantumRegister(1, name="result")
+        result: QuantumRegister = QuantumRegister(1, name="result")
         self.add_register(result)
 
-        circuit = QuantumCircuit(*self.qregs)
+        circuit: QuantumCircuit = QuantumCircuit(*self.qregs)
         circuit.x(sgn_2)
         circuit.append(adder.to_gate(), [*val_1, *sgn_1, *val_2, *sgn_2, *anc])
 

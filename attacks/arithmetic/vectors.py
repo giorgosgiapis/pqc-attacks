@@ -2,6 +2,7 @@ r"""
 Module containing circuits to perform arithmetic operations on vectors
 """
 from qiskit import QuantumCircuit, QuantumRegister, AncillaRegister
+from qiskit.circuit import Gate
 from qiskit.circuit.library import (
     CDKMRippleCarryAdder,
     HRSCumulativeMultiplier,
@@ -28,38 +29,46 @@ class Norm2(QuantumCircuit):
         Creates a norm calcluating circuit
         """
         super().__init__(name=name)
-        magnitude_bits = bits - 1
-        signs = [QuantumRegister(1, name=f"sgn_{i}") for i in range(dimension)]
-        values = [
+        magnitude_bits: int = bits - 1
+        signs: list[QuantumRegister] = [
+            QuantumRegister(1, name=f"sgn_{i}") for i in range(dimension)
+        ]
+        values: list[QuantumRegister] = [
             QuantumRegister(magnitude_bits, name=f"val_{i}")
             for i in range(dimension)
         ]
         for i in range(dimension):
             self.add_register(values[i], signs[i])
 
-        copy = AncillaRegister(magnitude_bits, name="copy")
+        copy: AncillaRegister = AncillaRegister(magnitude_bits, name="copy")
         self.add_register(copy)
 
-        mult_gate = HRSCumulativeMultiplier(magnitude_bits).to_gate(
+        mult_gate: Gate = HRSCumulativeMultiplier(magnitude_bits).to_gate(
             label="SquareCalc"
         )
-        mult_outs = [
+        mult_outs: list[AncillaRegister] = [
             AncillaRegister(2 * magnitude_bits + i, name=f"square_{i}")
             for i in range(dimension)
         ]
-        mult_helper = AncillaRegister(1, name="multiplication helper")
+        mult_helper: AncillaRegister = AncillaRegister(
+            1, name="multiplication helper"
+        )
         self.add_register(*mult_outs, mult_helper)
 
-        add_helper = AncillaRegister(1, name="addition helper")
-        couts = [
+        add_helper: AncillaRegister = AncillaRegister(
+            1, name="addition helper"
+        )
+        couts: list[AncillaRegister] = [
             AncillaRegister(1, name=f"cout_{i}") for i in range(dimension)
         ]
         self.add_register(*couts, add_helper)
 
-        norm = QuantumRegister(2 * magnitude_bits + dimension, name="norm")
+        norm: QuantumRegister = QuantumRegister(
+            2 * magnitude_bits + dimension, name="norm"
+        )
         self.add_register(norm)
 
-        circuit = QuantumCircuit(*self.qregs)
+        circuit: QuantumCircuit = QuantumCircuit(*self.qregs)
         for i in range(dimension):
             circuit.cx(values[i], copy)
             circuit.append(
@@ -86,4 +95,4 @@ class Norm2(QuantumCircuit):
             circuit.cx(values[i], copy)
 
         self.append(circuit.to_gate(label=name), self.qubits)
-        self.result_register: int = norm
+        self.result_register: QuantumRegister = norm
