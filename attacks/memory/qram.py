@@ -1,6 +1,6 @@
 from math import ceil, log2
 from qiskit import QuantumCircuit, QuantumRegister
-from qiskit.circuit import Gate
+from qiskit.circuit import ControlledGate
 from ..utils.quantum import encode_vector
 
 
@@ -39,9 +39,9 @@ class qRAM(QuantumCircuit):
             if x_gates:
                 circuit.x(x_gates)
 
-            controlled_encode: Gate = encode_vector(values[i], bits).control(
-                num_addr_qubits
-            )
+            controlled_encode: ControlledGate = encode_vector(
+                values[i], bits
+            ).control(num_addr_qubits)
             circuit.append(controlled_encode, circuit.qubits)
 
             if x_gates:

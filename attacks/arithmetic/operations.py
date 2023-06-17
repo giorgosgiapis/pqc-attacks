@@ -3,7 +3,7 @@ Contains methods to perform arithemtic operations on (signed) integers stored
 on quantum registers
 """
 from qiskit import QuantumCircuit, QuantumRegister, AncillaRegister
-from qiskit.circuit import Gate
+from qiskit.circuit import Gate, ControlledGate
 from qiskit.circuit.library import CDKMRippleCarryAdder
 from ..utils.quantum import controlled_X, controlled_incr
 
@@ -34,7 +34,7 @@ class SignedAdder(QuantumCircuit):
         circuit: QuantumCircuit = QuantumCircuit(*self.qregs)
 
         # convert to 1's complement format
-        c_tensor_x: Gate = controlled_X(bits - 1)
+        c_tensor_x: ControlledGate = controlled_X(bits - 1)
         for i in range(2):
             circuit.append(c_tensor_x, [nums[i][-1], *nums[i][:-1]])
 
