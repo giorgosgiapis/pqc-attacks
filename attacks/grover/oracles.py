@@ -19,15 +19,15 @@ class ReductionOracle:
         self.dimension = dimension
         self.bits = bits
 
-    def _first_marking_oracle(self) -> QuantumCircuit:
+    def _marking_oracle(self, first: bool = True) -> QuantumCircuit:
         r"""
-        Marking oracle for the first part of GaussReduce algorithm. Marks all
-        vectors :math:`v` in qRAM such that :math:`\|v\| \leq \|p\|` and
-        :math:`\|p-v\| < \|p\|`
+        Marking oracle for GaussReduce algorithm. If :code:`first` is set to
+        :code:`True` it marks all vectors :math:`v` in qRAM such that
+        :math:`\|v\| \leq \|p\|` and :math:`\|p-v\| < \|p\|`. Otherwise, it
+        marks all vectors :math:`v` in qRAM such that :math:`\|v\| > \|p\|`
+        and :math:`\|p-v\| \leq \|p\|`.
         """
-        circuit: QuantumCircuit = QuantumCircuit(
-            name="|v| <= |p| & |p-v| < |p|"
-        )
+        circuit: QuantumCircuit = QuantumCircuit(name="GaussReduce")
         addr_reg: QuantumRegister = QuantumRegister(
             self.num_address_qubits, name="addr"
         )
@@ -80,20 +80,27 @@ class ReductionOracle:
         )
         circuit.add_register(diff_norm_anc, diff_norm)
 
-        comp_geq_circ: QuantumCircuit = Compare(len(v_norm), cmp=">=")
-        comp_le_circ: QuantumCircuit = Compare(len(diff_norm), cmp="<")
-
-        comp_geq_anc: QuantumRegister = QuantumRegister(
-            comp_geq_circ.num_ancillas, name="geq_anc"
+        comp_p_v: QuantumCircuit = Compare(
+            len(v_norm), cmp=">=" if first else "<"
         )
-        v_leq_p: QuantumRegister = QuantumRegister(1, name=r"\|v\|\leq \|p\|")
-        circuit.add_register(comp_geq_anc, v_leq_p)
-
-        comp_le_anc: QuantumRegister = QuantumRegister(
-            comp_le_circ.num_ancillas, name="le_anc"
+        comp_p_v_anc: QuantumRegister = QuantumRegister(
+            comp_p_v.num_ancillas, name="cmp(p,v)_anc"
         )
-        diff_leq_p: QuantumRegister = QuantumRegister(1, name=r"\|p-v\|<\|p\|")
-        circuit.add_register(comp_le_anc, diff_leq_p)
+        comp_p_v_res: QuantumRegister = QuantumRegister(
+            1, name=r"cmp(\|v\|, \|p\|)"
+        )
+        circuit.add_register(comp_p_v_anc, comp_p_v_res)
+
+        comp_diff_p: QuantumCircuit = Compare(
+            len(diff_norm), cmp="<" if first else "<="
+        )
+        comp_diff_p_anc: QuantumRegister = QuantumRegister(
+            comp_diff_p.num_ancillas, name="cmp(p-v, p)_anc"
+        )
+        comp_diff_p_res: QuantumRegister = QuantumRegister(
+            1, name=r"cmp(\|p-v\|,\|p\|)"
+        )
+        circuit.add_register(comp_diff_p_anc, comp_diff_p_res)
 
         mem_qubits = []
         for reg in mem_regs:
@@ -131,25 +138,26 @@ class ReductionOracle:
         circuit.append(norm_circ, [*mem_qubits, *v_norm_anc, *v_norm[:-1]])
         circuit.append(norm_circ, [*p_qubits, *p_norm_anc, *p_norm[:-1]])
         circuit.append(
-            comp_geq_circ,
-            [*p_norm, *v_norm, *comp_geq_anc, *v_leq_p],
+            comp_p_v,
+            [*p_norm, *v_norm, *comp_p_v_anc, *comp_p_v_res],
         )
 
         circuit.append(
             norm_circ, [*mem_copy_qubits, *diff_norm_anc, *diff_norm[:-1]]
         )
         circuit.append(
-            comp_le_circ, [*diff_norm, *p_norm, *comp_le_anc, *diff_leq_p]
+            comp_diff_p,
+            [*diff_norm, *p_norm, *comp_diff_p_anc, *comp_diff_p_res],
         )
 
         final_res: QuantumRegister = QuantumRegister(1, name="final_result")
         circuit.add_register(final_res)
 
-        circuit.mcx([v_leq_p, diff_leq_p], final_res)
+        circuit.mcx([comp_p_v_res, comp_diff_p_res], final_res)
 
         circuit.append(
-            comp_le_circ.inverse(),
-            [*diff_norm, *p_norm, *comp_le_anc, *diff_leq_p],
+            comp_diff_p.inverse(),
+            [*diff_norm, *p_norm, *comp_diff_p_anc, *comp_diff_p_res],
         )
         circuit.append(
             norm_circ.inverse(),
@@ -157,8 +165,8 @@ class ReductionOracle:
         )
 
         circuit.append(
-            comp_geq_circ.inverse(),
-            [*p_norm, *v_norm, *comp_geq_anc, *v_leq_p],
+            comp_p_v.inverse(),
+            [*p_norm, *v_norm, *comp_p_v_anc, *comp_p_v_res],
         )
         circuit.append(
             norm_circ.inverse(), [*p_qubits, *p_norm_anc, *p_norm[:-1]]
@@ -186,13 +194,15 @@ class ReductionOracle:
 
         return circuit
 
-    def first_phase_oracle(self) -> QuantumCircuit:
+    def phase_oracle(self, first: bool = True) -> QuantumCircuit:
         r"""
-        Phase oracle corresponding to the marking oracle for the first part of
-        GaussReduce algorithm. The marking oracle marks all vectors :math:`v`
-        in qRAM such that :math:`\|v\| \leq \|p\|` and :math:`\|p-v\| < \|p\|`
+        Phase oracle corresponding to the marking oracle for GaussReduce
+        algorithm. If :code:`first` is set to :code:`True` the marking orcale
+        marks all vectors :math:`v` in qRAM such that  :math:`\|v\| \leq \|p\|`
+        and :math:`\|p-v\| < \|p\|`. Otherwise, it marks all vectors :math:`v`
+        in qRAM such that :math:`\|v\| > \|p\|` and :math:`\|p-v\| \leq \|p\|`.
         """
-        marking_oracle: QuantumCircuit = self._first_marking_oracle()
+        marking_oracle: QuantumCircuit = self._marking_oracle(first=first)
         circuit: QuantumCircuit = QuantumCircuit(*marking_oracle.qregs)
         circuit.x(circuit.qubits[-1])
         circuit.h(circuit.qubits[-1])
