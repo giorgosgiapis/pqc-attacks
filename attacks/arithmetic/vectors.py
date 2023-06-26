@@ -1,3 +1,14 @@
+# Norm calculation circuit details:
+# Given a vector stored in a quantum register we apply the following procedure
+# for each of the vector elements:
+#    * Copy v[i] to a new register
+#    * Multiply v[i] with v[i] (in the new register)
+#    * Add the multiplication result to the final result layer
+#    * Repeat for next element
+#
+# We use a Cuccaro half-adder for the additions and an HRS Cumulative Multiplier
+# for multiplications, both provided by Qiskit
+
 r"""
 Module containing circuits to perform arithmetic operations on vectors
 """
@@ -17,9 +28,6 @@ class Norm2(QuantumCircuit):
     :param dimension: Dimension of the vector
     :param bits: Number of qubits used to store each vector component in sign-
         magnitute format
-
-    TODO: add details about the circuit implementation, number qubits, ancillas,
-    etc
     """
 
     def __init__(

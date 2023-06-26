@@ -13,7 +13,11 @@ class SignedAdder(QuantumCircuit):
     Accepts two integers stored in two quantum registers in sign-magnitude
     representation and computes their (in-place) sum in sign-magnitude
     representation.
-    TODO: write docs
+
+    :param bits: number of bits used to store each number
+
+    *Note:* No overflow check is implemented. It is assumed that the result
+    will fit in the number of bits specified.
     """
 
     def __init__(self, bits: int, name: str = "SignedAdder") -> None:
@@ -62,7 +66,9 @@ class Compare(QuantumCircuit):
 
         |a\rangle|b\rangle|0\rangle\mapsto |a\rangle|a-b\rangle|a\gtrless b\rangle
 
-    TODO: add more
+    :param bits: number of bits used to store each number in sign-magnitute
+        format
+    :param cmp: can be any one of ">", "<", "=", ">=", "<="
     """
 
     def __init__(

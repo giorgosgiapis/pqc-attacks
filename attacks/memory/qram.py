@@ -1,3 +1,6 @@
+r"""
+Implements methods needed for quantum memory
+"""
 from math import ceil, log2
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit import ControlledGate
@@ -6,7 +9,14 @@ from ..utils.quantum import encode_vector
 
 class qRAM(QuantumCircuit):
     r"""
-    TODO: Documentation
+    Simple qRAM implementation. Given a list of intgers it builds a circuit
+    containing an address and a memory register. Setting the address register
+    to a value (in binary) between :code:`0` and :code:`len(L)-1` sets the
+    address memory to the corresponding list element.
+
+    :param values: list of integers
+    :param bits: number of bits used to store each element in sign-magnitude
+        format
     """
 
     def __init__(
