@@ -44,7 +44,7 @@ def encode_signed_int(value: int, bits: int) -> Gate:
     if value < 0:
         circuit.x(sign_reg)
 
-    value_bin: str = bin(value)[2:].zfill(magnitude_bits)[::-1]
+    value_bin: str = bin(abs(value))[2:].zfill(magnitude_bits)[::-1]
     for i, bit in enumerate(value_bin):
         if bit == "1":
             circuit.x(value_reg[i])
