@@ -4,7 +4,7 @@
 
 This repository contains Qiskit code to implement the quantum version of the  heuristic GaussSieve algorithm proposed in [1] by Micciancio and Voulgaris 
 to solve the [Shortest vector problem (SVP)](https://en.wikipedia.org/wiki/Lattice_problem#Shortest_vector_problem_(SVP)) on lattices. First, we present 
-the GaussSieve algorithm and how we can modify it by using hashing techniques.
+the GaussSieve algorithm and a modification that uses hashing techniques.
 We then proceed with a brief high-level explanation of our code as well as the bottlenecks 
 of our approach. Note that this code serves as a proof of concept and a starting 
 point for a more thorough resource estimation of these types of quantum attacks. 
