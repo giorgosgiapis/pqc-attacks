@@ -16,7 +16,7 @@ For a more detailed and technical overview of the code please refer to the
 We now present the pseudocode of GaussSieve (taken from [1]) along with a version 
 that uses hashing (colored in blue). For more details on how hashing can be used to speed up GaussSieve and which hash families $\mathcal{H}$ provide speedups, refer to [2].
 The constants $k$ and $t$ are dependent on the hash family $\mathcal{H}$ while a 
-good value for the number of collisions $c$ can be experimentally determined (original 
+good value for the number of collisions $c$ can be experimentally determined (the original 
 paper suggests $c=500$ is good enough).
 
 ![GaussSieve](img/gauss_sieve.png)
@@ -55,7 +55,7 @@ elements is encoded in $5$ bits, looks like this:
 The main part of this project is the implementation of oracles to perform the 
 searches in the ``GaussReduce`` procedure. The code implementing those oracles 
 is located in `attacks/grover/oracles.py`. These oracles are meant to be used 
-with the built-in [``AmplificationProblem ``](https://qiskit.org/documentation/tutorials/algorithms/06_grover.html) class in Qiskit. Following the notation of the linked tutorial, 
+with the built-in [``AmplificationProblem``](https://qiskit.org/documentation/tutorials/algorithms/06_grover.html) class in Qiskit. Following the notation of the linked tutorial, 
 ``state_preparation`` consists of the qRAM circuit with Hadamard gates on the 
 address register, a register encoding $\mathbf{p}$ as well as the necessary ancillas 
 (to match the ancillas of the oracle). Finally, ``is_good_state`` is a function 
@@ -64,7 +64,7 @@ that (classically) checks if the returned list element has the required property
 ## Bottlenecks
 
 * Due to the large number of qubits needed to perform all the operations the code 
-cannot be executed in a simulator, even for very small instances of the problem. 
+cannot be executed in a simulator, even for small instances of the problem. 
 * Due to the limited capabilities of quantum SDKs, implementing a fully capable 
 qRAM is extremely difficult. The current architecture cannot handle list updates 
 without having to rebuild the qRAM from scratch. This of course eliminates any 
@@ -85,7 +85,7 @@ wrote can be found in the `tests/` directory and are run automatically every tim
 new code is pushed to the repository, thus providing assurance on the correctness 
 of the code.
 
-## Refereces
+## References
 [1] Daniele Micciancio and Panagiotis Voulgaris. **Faster exponential 
     time algorithms for the shortest vector problem**. In Proceedings of the 
     twenty-first annual ACM-SIAM symposium on Discrete Algorithms, pages 
