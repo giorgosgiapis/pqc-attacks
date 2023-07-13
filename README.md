@@ -60,6 +60,17 @@ with the built-in [``AmplificationProblem``](https://qiskit.org/documentation/tu
 address register, a register encoding $\mathbf{p}$ as well as the necessary ancillas 
 (to match the ancillas of the oracle). Finally, ``is_good_state`` is a function 
 that (classically) checks if the returned list element has the required property. 
+The pseudocode for ``is_good_state`` (for either one of the two searching problems) would look like this:
+
+```python
+def is_good_state(measured_bitstring):
+    isolate the solution vector L[i] from measured_bitstring
+    isolate the vector p from measured_bitstring
+    calculate the norms of L[i], p and p-L[i]
+    if the norms satisfy the searching condition:
+        return True
+    return False
+```
 
 ## Bottlenecks
 
