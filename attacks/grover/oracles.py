@@ -3,7 +3,7 @@
 #  1. Mark vectors v in L such that the norm of v is less than or equal to the
 #     norm of p and the norm of p-v is strictly less than the norm of p
 #  2. Mark vector v in L such that the norm of v is strictly greater than the
-#     norm of p and the norm of p-v is less than or equal to the norm of p
+#     norm of p and the norm of p-v is less than or equal to the norm of v
 #
 # A reference classical implementation of GaussReduce can be found in the
 # original paper by Daniele Micciancio and Panagiotis Voulgaris [1] where they
@@ -26,38 +26,36 @@ from ..arithmetic.operations import Compare, SignedAdder
 
 class ReductionOracle:
     r"""
-    Class implementing quantum oracles for the GaussReduce algorithm. The 
-    classical GaussReduce procedure can be decomposed in to a series of two 
-    searching problems. The first search repeatedly searches for an element 
-    :math:`v_i` in the list :math:`L` such that :math:`\|v_i\| \leq \|p\|` and 
-    :math:`\|p-v_i\| < \|p\|` while the second one searches for elements 
-    :math:`v_i` in :math:`L` such that :math:`\|v_i\| > \|p\|` and 
-    :math:`\|p-v_i\| \leq \|p\|`. 
-    
-    This class implements both the oracles corresponding to the above search 
-    problems. Pseudocode for a reference classical implementation of the 
-    GaussReduce procedure as well as the whole Gauss Sieve algorithm can be 
+    Class implementing quantum oracles for the GaussReduce algorithm. The
+    classical GaussReduce procedure can be decomposed in to a series of two
+    searching problems. The first search repeatedly searches for an element
+    :math:`v_i` in the list :math:`L` such that :math:`\|v_i\| \leq \|p\|` and
+    :math:`\|p-v_i\| < \|p\|` while the second one searches for elements
+    :math:`v_i` in :math:`L` such that :math:`\|v_i\| > \|p\|` and
+    :math:`\|p-v_i\| \leq \|v_i\|`.
+
+    This class implements both the oracles corresponding to the above search
+    problems. Pseudocode for a reference classical implementation of the
+    GaussReduce procedure as well as the whole Gauss Sieve algorithm can be
     found in [1]
 
     :param num_address_qubits: number of address qubits in qRAM
     :param dimension: dimension of lattice
-    :param bits: number of bits used to store each vector element in 
+    :param bits: number of bits used to store each vector element in
         sign-magnitude format
-    
+
     References:
     ===========
 
-    `[1]`_ Daniele Micciancio and Panagiotis Voulgaris. **Faster exponential 
-    time algorithms for the shortest vector problem**. In Proceedings of the 
-    twenty-first annual ACM-SIAM symposium on Discrete Algorithms, pages 
+    `[1]`_ Daniele Micciancio and Panagiotis Voulgaris. **Faster exponential
+    time algorithms for the shortest vector problem**. In Proceedings of the
+    twenty-first annual ACM-SIAM symposium on Discrete Algorithms, pages
     1468–1480. SIAM, 2010
 
     .. _[1]: https://epubs.siam.org/doi/pdf/10.1137/1.9781611973075.119
     """
 
-    def __init__(
-        self, num_address_qubits: int, dimension: int, bits: int
-    ) -> None:
+    def __init__(self, num_address_qubits: int, dimension: int, bits: int) -> None:
         self.num_address_qubits = num_address_qubits
         self.dimension = dimension
         self.bits = bits
@@ -77,14 +75,12 @@ class ReductionOracle:
         circuit.add_register(addr_reg)
 
         mem_regs: list[QuantumRegister] = [
-            QuantumRegister(self.bits, name=f"v_{i}")
-            for i in range(self.dimension)
+            QuantumRegister(self.bits, name=f"v_{i}") for i in range(self.dimension)
         ]
         circuit.add_register(*mem_regs)
 
         p_value_regs: list[QuantumRegister] = [
-            QuantumRegister(self.bits, name=f"p_{i}")
-            for i in range(self.dimension)
+            QuantumRegister(self.bits, name=f"p_{i}") for i in range(self.dimension)
         ]
         circuit.add_register(*p_value_regs)
 
@@ -123,27 +119,23 @@ class ReductionOracle:
         )
         circuit.add_register(diff_norm_anc, diff_norm)
 
-        comp_p_v: QuantumCircuit = Compare(
-            len(v_norm), cmp=">=" if first else "<"
-        )
+        comp_p_v: QuantumCircuit = Compare(len(v_norm), cmp=">=" if first else ">")
         comp_p_v_anc: AncillaRegister = AncillaRegister(
             comp_p_v.num_ancillas, name="cmp(p,v)_anc"
         )
-        comp_p_v_res: AncillaRegister = AncillaRegister(
-            1, name=r"cmp(\|v\|, \|p\|)"
-        )
+        comp_p_v_res: AncillaRegister = AncillaRegister(1, name=r"cmp(\|v\|, \|p\|)")
         circuit.add_register(comp_p_v_anc, comp_p_v_res)
 
-        comp_diff_p: QuantumCircuit = Compare(
+        comp_diff_p_v: QuantumCircuit = Compare(
             len(diff_norm), cmp="<" if first else "<="
         )
-        comp_diff_p_anc: AncillaRegister = AncillaRegister(
-            comp_diff_p.num_ancillas, name="cmp(p-v, p)_anc"
+        comp_diff_p_v_anc: AncillaRegister = AncillaRegister(
+            comp_diff_p_v.num_ancillas, name="cmp(p-v, p/v)_anc"
         )
-        comp_diff_p_res: AncillaRegister = AncillaRegister(
-            1, name=r"cmp(\|p-v\|,\|p\|)"
+        comp_diff_p_v_res: AncillaRegister = AncillaRegister(
+            1, name=r"cmp(\|p-v\|,\|p\| / \|v\|)"
         )
-        circuit.add_register(comp_diff_p_anc, comp_diff_p_res)
+        circuit.add_register(comp_diff_p_v_anc, comp_diff_p_v_res)
 
         mem_qubits = []
         for reg in mem_regs:
@@ -161,9 +153,7 @@ class ReductionOracle:
             circuit.x(reg[-1])
 
         adder: QuantumCircuit = SignedAdder(self.bits)
-        couts = [
-            AncillaRegister(1, name=f"cout_{i}") for i in range(self.dimension)
-        ]
+        couts = [AncillaRegister(1, name=f"cout_{i}") for i in range(self.dimension)]
         add_helper = AncillaRegister(1, name="add_helper")
         circuit.add_register(*couts, add_helper)
 
@@ -180,43 +170,70 @@ class ReductionOracle:
 
         circuit.append(norm_circ, [*mem_qubits, *v_norm_anc, *v_norm[:-1]])
         circuit.append(norm_circ, [*p_qubits, *p_norm_anc, *p_norm[:-1]])
-        circuit.append(
-            comp_p_v,
-            [*p_norm, *v_norm, *comp_p_v_anc, *comp_p_v_res],
-        )
 
-        circuit.append(
-            norm_circ, [*mem_copy_qubits, *diff_norm_anc, *diff_norm[:-1]]
-        )
-        circuit.append(
-            comp_diff_p,
-            [*diff_norm, *p_norm, *comp_diff_p_anc, *comp_diff_p_res],
-        )
+        # For the first oracle we need p to be unchanged for the second
+        # comparison whereas for the second we need v. Since comparison
+        # circuit alters the second argument we have to accound for that
+        if first:
+            circuit.append(
+                comp_p_v,
+                [*p_norm, *v_norm, *comp_p_v_anc, *comp_p_v_res],
+            )
+        else:
+            circuit.append(
+                comp_p_v,
+                [*v_norm, *p_norm, *comp_p_v_anc, *comp_p_v_res],
+            )
+
+        circuit.append(norm_circ, [*mem_copy_qubits, *diff_norm_anc, *diff_norm[:-1]])
+
+        if first:
+            circuit.append(
+                comp_diff_p_v,
+                [*diff_norm, *p_norm, *comp_diff_p_v_anc, *comp_diff_p_v_res],
+            )
+        else:
+            circuit.append(
+                comp_diff_p_v,
+                [*diff_norm, *v_norm, *comp_diff_p_v_anc, *comp_diff_p_v_res],
+            )
 
         final_res: AncillaRegister = AncillaRegister(1, name="final_result")
         circuit.add_register(final_res)
 
-        circuit.mcx([comp_p_v_res, comp_diff_p_res], final_res)
+        circuit.mcx([comp_p_v_res, comp_diff_p_v_res], final_res)
 
-        circuit.append(
-            comp_diff_p.inverse(),
-            [*diff_norm, *p_norm, *comp_diff_p_anc, *comp_diff_p_res],
-        )
+        # Uncompute
+
+        if first:
+            circuit.append(
+                comp_diff_p_v.inverse(),
+                [*diff_norm, *p_norm, *comp_diff_p_v_anc, *comp_diff_p_v_res],
+            )
+        else:
+            circuit.append(
+                comp_diff_p_v.inverse(),
+                [*diff_norm, *v_norm, *comp_diff_p_v_anc, *comp_diff_p_v_res],
+            )
+
         circuit.append(
             norm_circ.inverse(),
             [*mem_copy_qubits, *diff_norm_anc, *diff_norm[:-1]],
         )
 
-        circuit.append(
-            comp_p_v.inverse(),
-            [*p_norm, *v_norm, *comp_p_v_anc, *comp_p_v_res],
-        )
-        circuit.append(
-            norm_circ.inverse(), [*p_qubits, *p_norm_anc, *p_norm[:-1]]
-        )
-        circuit.append(
-            norm_circ.inverse(), [*mem_qubits, *v_norm_anc, *v_norm[:-1]]
-        )
+        if first:
+            circuit.append(
+                comp_p_v.inverse(),
+                [*p_norm, *v_norm, *comp_p_v_anc, *comp_p_v_res],
+            )
+        else:
+            circuit.append(
+                comp_p_v.inverse(),
+                [*v_norm, *p_norm, *comp_p_v_anc, *comp_p_v_res],
+            )
+
+        circuit.append(norm_circ.inverse(), [*p_qubits, *p_norm_anc, *p_norm[:-1]])
+        circuit.append(norm_circ.inverse(), [*mem_qubits, *v_norm_anc, *v_norm[:-1]])
 
         for i in range(self.dimension):
             circuit.append(
@@ -243,7 +260,7 @@ class ReductionOracle:
         algorithm. If :code:`first` is set to :code:`True` the marking orcale
         marks all vectors :math:`v` in qRAM such that  :math:`\|v\| \leq \|p\|`
         and :math:`\|p-v\| < \|p\|`. Otherwise, it marks all vectors :math:`v`
-        in qRAM such that :math:`\|v\| > \|p\|` and :math:`\|p-v\| \leq \|p\|`.
+        in qRAM such that :math:`\|v\| > \|p\|` and :math:`\|p-v\| \leq \|v\|`.
         """
         marking_oracle: QuantumCircuit = self._marking_oracle(first=first)
         circuit: QuantumCircuit = QuantumCircuit(*marking_oracle.qregs)
