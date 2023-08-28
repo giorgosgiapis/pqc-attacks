@@ -88,9 +88,9 @@ implement them here.
 
 ## Testing the code
 
-Since simulating the full code is beyond the capabilities of the systems we have 
-access to (40core CPU, 250GB RAM) we opted to test each oracle separately. Because 
-all of them are classical in nature (there is no entanglement), we can simulate 
+Since simulating the full code is beyond the capabilities of standard HPC clusters we opted 
+to test each oracle separately. Because all of them are classical in nature 
+(there is no entanglement), we can simulate 
 them easily using Qiskit's [matrix product state](https://qiskit.org/documentation/tutorials/simulators/7_matrix_product_state_method.html) simulation method. The tests we 
 wrote can be found in the `tests/` directory and are run automatically every time
 new code is pushed to the repository, thus providing assurance on the correctness 
