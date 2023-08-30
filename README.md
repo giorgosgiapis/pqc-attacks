@@ -55,7 +55,7 @@ elements is encoded in $5$ bits, looks like this:
 The main part of this project is the implementation of oracles to perform the 
 searches in the ``GaussReduce`` procedure. The code implementing those oracles 
 is located in `attacks/grover/oracles.py`. These oracles are meant to be used 
-with the built-in [``AmplificationProblem``](https://qiskit.org/documentation/tutorials/algorithms/06_grover.html) class in Qiskit. Following the notation of the linked tutorial, 
+with the built-in [``AmplificationProblem``](https://qiskit.org/ecosystem/algorithms/tutorials/06_grover.html) class in Qiskit. Following the notation of the linked tutorial, 
 ``state_preparation`` consists of the qRAM circuit with Hadamard gates on the 
 address register, a register encoding $\mathbf{p}$ as well as the necessary ancillas 
 (to match the ancillas of the oracle). Finally, ``is_good_state`` is a function 
