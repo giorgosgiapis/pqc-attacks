@@ -10,6 +10,9 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.11"
+  obs:
+    pre_build:
+     - phinx-apidoc -o docs/ attacks/
     # You can also specify other tool versions:
     # nodejs: "19"
     # rust: "1.64"
