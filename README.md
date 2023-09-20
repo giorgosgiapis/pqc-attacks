@@ -9,7 +9,7 @@ We then proceed with a brief high-level explanation of our code as well as the b
 of our approach. Note that this code serves as a proof of concept and a starting 
 point for a more thorough resource estimation of these types of quantum attacks. 
 For a more detailed and technical overview of the code please refer to the 
-[documentation](add_later).
+[documentation](https://pqc-attacks.readthedocs.io).
 
 ## GaussSieve (with hashing)
 
