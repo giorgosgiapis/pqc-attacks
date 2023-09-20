@@ -12,7 +12,7 @@ build:
     python: "3.11"
   jobs:
     pre_build:
-     - phinx-apidoc -o docs/ attacks/
+     - sphinx-apidoc -o docs/ attacks/
     # You can also specify other tool versions:
     # nodejs: "19"
     # rust: "1.64"
